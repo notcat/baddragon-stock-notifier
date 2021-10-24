@@ -1,6 +1,10 @@
 import axios from "axios";
+import { Response } from "express";
 
-const inventoryUrl: string = "https://bad-dragon.com/api/inventory-toys?price[min]=0&price[max]=300&sort[field]=price&&sort[direction]=asc&page=1&limit=60"
+let page: number = 1;
+
+const totalInventory: string = "https://bad-dragon.com/api/inventory-toys/total?price[min]=0&price[max]=300&";
+const inventoryUrl: string = `https://bad-dragon.com/api/inventory-toys?price[min]=0&price[max]=300&sort[field]=price&&sort[direction]=asc&page=${page}&limit=60`
 
 class startInventory {
     refreshTime: number;
@@ -17,18 +21,31 @@ class startInventory {
 }
 
 function fetchInventory(){
-    axios.get(inventoryUrl)
-        .then(function (response) {
-            // handle success
-            console.log(response.data);
-        })
-        .catch(function (error) {
-            // handle error
-            console.log(error);
-        })
-        .then(function () {
-            // always executed
-        });
+    getTotalInventory().then((data) => {
+        if(data?.total === undefined){ console.log("Total number of inventory items is NOT a number!"); return; }
+
+        return Math.floor(data?.total/60); // should probably enforce number only return but this can only be a number so /shrug
+    }).then((pagesRequired) => {
+        console.log(pagesRequired);
+    });
+}
+
+async function getTotalInventory() {
+    try {
+        const response = await axios.get(totalInventory);
+
+        if(response.status === 200){
+            // Success!
+            return response.data as TotalInventory;
+        }
+    } catch (error) {
+        
+    }
+    
+}
+
+interface TotalInventory {
+    total: number;
 }
 
 export default startInventory;
