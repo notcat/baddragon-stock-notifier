@@ -9,4 +9,7 @@ const inv = new inventory(30000); // Delay to fetch api, in miliseconds
 
 inv.listen(); // Listens for the inventory changes
 
-export default server;
+export {
+    server,
+    inv,
+}

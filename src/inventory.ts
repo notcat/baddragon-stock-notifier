@@ -7,20 +7,40 @@ const totalInventory: string = "https://web.archive.org/web/20210312230702/https
 
 class startInventory {
     refreshTime: number;
+    inventory: Inventory = {
+        limit: 0,
+        page: 1,
+        toys: [],
+    };;
 
     constructor(refreshTime: number) {
         this.refreshTime = refreshTime
 
-        fetchInventory();
+        fetchInventory().then((inventory) => {
+            if(inventory === undefined) { console.log("Error setting class inventory to the fetched inventory!"); return;}
+            this.inventory = inventory;
+        });
     }
 
     listen() {
         setInterval(fetchInventory, this.refreshTime);
+
+        //console.log(this.inventory.toys[1].sku);
     }
+
+    getToys(index:number | undefined) {
+        if(index === undefined){
+            return this.inventory.toys;
+        }else{
+            return this.inventory.toys[index];
+        }
+    }
+
+    
 }
 
-function fetchInventory() {
-    getTotalInventory().then((data) => {
+async function fetchInventory() {
+    return getTotalInventory().then((data) => {
         if (data?.total === undefined) { console.log("Total number of inventory items is NOT a number!"); return; }
 
         return Math.floor(data?.total / 60); // should probably enforce number only return but this can only be a number so /shrug
@@ -28,23 +48,35 @@ function fetchInventory() {
         // We now have the amount of pages we need to fetch
         if (pagesRequired === undefined) { console.log("Error getting the pages required"); return; }
 
-        let inventory: Inventory = {
-            limit: 1,
+        let returnedInventory:Inventory  = {
+            limit: 0,
             page: 1,
             toys: [],
         };
 
         (async () => {
-            for (let i: number = 1; i < pagesRequired + 1; i++) {
+            //  Make initial array
+            let inventory: Inventory = {
+                limit: 0,
+                page: 1,
+                toys: [],
+            };
+
+            for (let i: number = 1; i < 1 + 1; i++) {
+                console.log(i);
+
                 if (i === 1) { // If the first inventory search
                     getInventory(i).then((data) => {
                         if (data === undefined) { console.log("Error getting inventory from page"); return; }
                         // Set the inventory to this so we can get the initial inventory, from then we just add on to the toys.
-                        console.log(inventory.limit);
                         inventory = data;
-                        console.log(inventory.limit);
+
+                        // inventory.toys.forEach(toy => {
+                        //     console.log(toy.sku);
+                        // });
                     });
                 } else {
+                    console.log("here! index " + i);
                     getInventory(i).then((data) => {
                         if (data === undefined) { console.log("Error getting inventory from page"); return; }
                         data.toys.forEach(toy => {
@@ -53,23 +85,24 @@ function fetchInventory() {
                             // I dont believe this is possible to overcome, so we must check if it exists before pushing.
                             // If a toy gets added/removed, its not too big of a deal, because we just check it again X number of seconds later
                             // defined in server.ts
-                            console.log("here!")
+                            
 
                             inventory.toys.indexOf(toy) === -1 ? inventory.toys.push(toy) : console.log("This item already exists");
                         });
                     });
                 }
-
-                console.log(pagesRequired);
-                delay(1500); // Wait 1500 miliseconds to prevent flooding the API
+                
+                await delay(2500); // Wait 1500 miliseconds to prevent flooding the API
             }
+
+            return inventory;
+        })().then(inventory => {
+            returnedInventory = inventory;
         });
 
-        console.log(inventory);
-        return inventory;
+        return returnedInventory;
     }).then((inventory) => {
         // We have got all the toys! Return the array full of toys!
-        console.log(inventory);
         return inventory;
     });
 }
@@ -97,7 +130,8 @@ async function getInventory(page: number) {
 
         if (response.status === 200) {
             // Success!
-            console.log("cum");
+            // console.log("Successfully queried inventory");
+            // console.log((response.data as Inventory).toys[1]);
             return response.data as Inventory;
         }
     } catch (error) {
