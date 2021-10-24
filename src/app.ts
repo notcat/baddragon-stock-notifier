@@ -8,7 +8,15 @@ const app = express();
 app.set("port", process.env.PORT || 3000);
 
 app.get('/', function (req, res) {
-    res.send(inv.getToys);
+    let toys = inv.getToys(undefined);
+
+    let json = { ...toys };
+
+    json = Object.assign({}, toys);
+
+    json = toys.reduce((json: any, value: any, key: any) => { json[key] = value; return json; }, {});
+    
+    res.send(json);
 })
 
 export default app;
