@@ -1,0 +1,29 @@
+{
+  "name": "baddragon-stock-notifier",
+  "version": "1.0.0",
+  "description": "Gets the stock from bad-dragon.com and sends out webhooks notifications!",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.23.0",
+    "express": "^4.17.1",
+    "typescript": "^4.4.4"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/express": "^4.17.13"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notcat/baddragon-stock-notifier.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/notcat/baddragon-stock-notifier/issues"
+  },
+  "homepage": "https://github.com/notcat/baddragon-stock-notifier#readme"
+}
