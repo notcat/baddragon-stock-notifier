@@ -8,7 +8,7 @@ const totalInventory: string = "https://web.archive.org/web/20210312230702/https
 class startInventory {
     refreshTime: number;
 
-    constructor(refreshTime:number) {
+    constructor(refreshTime: number) {
         this.refreshTime = refreshTime
 
         fetchInventory();
@@ -19,47 +19,53 @@ class startInventory {
     }
 }
 
-function fetchInventory(){
+function fetchInventory() {
     getTotalInventory().then((data) => {
-        if(data?.total === undefined){ console.log("Total number of inventory items is NOT a number!"); return; }
+        if (data?.total === undefined) { console.log("Total number of inventory items is NOT a number!"); return; }
 
-        return Math.floor(data?.total/60); // should probably enforce number only return but this can only be a number so /shrug
+        return Math.floor(data?.total / 60); // should probably enforce number only return but this can only be a number so /shrug
     }).then((pagesRequired) => {
         // We now have the amount of pages we need to fetch
-        if(pagesRequired === undefined){ console.log("Error getting the pages required"); return; }
+        if (pagesRequired === undefined) { console.log("Error getting the pages required"); return; }
 
-        let inventory:Inventory = {
-            limit: 60,
+        let inventory: Inventory = {
+            limit: 1,
             page: 1,
             toys: [],
         };
 
-        for (let i:number = 1; i < pagesRequired+1; i++) {
-            if(i === 1) { // If the first inventory search
-                getInventory(i).then((data) => {
-                    if(data === undefined) { console.log("Error getting inventory from page"); return; }
-                    // Set the inventory to this so we can get the initial inventory, from then we just add on to the toys.
-                    inventory = data;
-                });
-            }else{
-                getInventory(i).then((data) => {
-                    if(data === undefined){ console.log("Error getting inventory from page"); return; }
-                    data.toys.forEach(toy => {
-                        // Only put the new toy in if it exists! 
-                        // We could have inconsistancies when going to next page if the inventory changes during our requests. 
-                        // I dont believe this is possible to overcome, so we must check if it exists before pushing.
-                        // If a toy gets added/removed, its not too big of a deal, because we just check it again X number of seconds later
-                        // defined in server.ts
-    
-                        inventory.toys.indexOf(toy) === -1 ? inventory.toys.push(toy) : console.log("This item already exists");   
+        (async () => {
+            for (let i: number = 1; i < pagesRequired + 1; i++) {
+                if (i === 1) { // If the first inventory search
+                    getInventory(i).then((data) => {
+                        if (data === undefined) { console.log("Error getting inventory from page"); return; }
+                        // Set the inventory to this so we can get the initial inventory, from then we just add on to the toys.
+                        console.log(inventory.limit);
+                        inventory = data;
+                        console.log(inventory.limit);
                     });
-                });
+                } else {
+                    getInventory(i).then((data) => {
+                        if (data === undefined) { console.log("Error getting inventory from page"); return; }
+                        data.toys.forEach(toy => {
+                            // Only put the new toy in if it exists! 
+                            // We could have inconsistancies when going to next page if the inventory changes during our requests. 
+                            // I dont believe this is possible to overcome, so we must check if it exists before pushing.
+                            // If a toy gets added/removed, its not too big of a deal, because we just check it again X number of seconds later
+                            // defined in server.ts
+                            console.log("here!")
+
+                            inventory.toys.indexOf(toy) === -1 ? inventory.toys.push(toy) : console.log("This item already exists");
+                        });
+                    });
+                }
+
+                console.log(pagesRequired);
+                delay(1500); // Wait 1500 miliseconds to prevent flooding the API
             }
+        });
 
-            console.log(pagesRequired);
-            delay(500); // Wait 500 miliseconds to prevent flooding the API
-        }
-
+        console.log(inventory);
         return inventory;
     }).then((inventory) => {
         // We have got all the toys! Return the array full of toys!
@@ -72,7 +78,7 @@ async function getTotalInventory() {
     try {
         const response = await axios.get(totalInventory);
 
-        if(response.status === 200){
+        if (response.status === 200) {
             // Success!
             return response.data as TotalInventory;
         }
@@ -89,7 +95,7 @@ async function getInventory(page: number) {
     try {
         const response = await axios.get(inventoryUrl);
 
-        if(response.status === 200){
+        if (response.status === 200) {
             // Success!
             console.log("cum");
             return response.data as Inventory;
@@ -100,7 +106,7 @@ async function getInventory(page: number) {
 }
 
 function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 interface TotalInventory {
