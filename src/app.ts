@@ -10,8 +10,8 @@ app.set("port", process.env.PORT || 3000);
 app.get('/toys', function (req, res) {
     let toys = inv.getToys();
     
-    console.log(toys);
-    res.send(toys[0]);
+    res.send(toys);
+    console.log("Sent toys object to client!")
 })
 
 export default app;
