@@ -9,9 +9,9 @@ class startInventory {
     refreshTime: number;
     inventory: Inventory = {
         limit: 0,
-        page: 1,
+        page: 200,
         toys: [],
-    };;
+    };
 
     constructor(refreshTime: number) {
         this.refreshTime = refreshTime
@@ -28,12 +28,14 @@ class startInventory {
         //console.log(this.inventory.toys[1].sku);
     }
 
-    getToys(index:number | undefined) {
-        if(index === undefined){
+    getToys() { // index:number | undefined
+        //if(index === undefined){
+            console.log(this.inventory);
             return this.inventory.toys;
-        }else{
-            return this.inventory.toys[index];
-        }
+            
+        //} else{
+        //     return this.inventory.toys[index];
+        // }
     }
 
     
@@ -58,7 +60,7 @@ async function fetchInventory() {
             //  Make initial array
             let inventory: Inventory = {
                 limit: 0,
-                page: 1,
+                page: 500,
                 toys: [],
             };
 
@@ -70,6 +72,7 @@ async function fetchInventory() {
                         if (data === undefined) { console.log("Error getting inventory from page"); return; }
                         // Set the inventory to this so we can get the initial inventory, from then we just add on to the toys.
                         inventory = data;
+                        console.log(inventory);
 
                         // inventory.toys.forEach(toy => {
                         //     console.log(toy.sku);
