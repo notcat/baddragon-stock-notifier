@@ -3,7 +3,8 @@ import { Response } from "express";
 
 let page: number = 1;
 
-const totalInventory: string = "https://web.archive.org/web/20210312230702/https://bad-dragon.com/api/inventory-toys/total?price[min]=0&price[max]=300&";
+//const totalInventory: string = "https://web.archive.org/web/20210312230702/https://bad-dragon.com/api/inventory-toys/total?price[min]=0&price[max]=300&";
+const totalInventory: string = "https://bad-dragon.com/api/inventory-toys/total?price[min]=0&price[max]=300&";
 
 class startInventory {
     refreshTime: number;
@@ -17,40 +18,46 @@ class startInventory {
         this.refreshTime = refreshTime
 
         fetchInventory().then((inventory) => {
-            if(inventory === undefined) { console.log("Error setting class inventory to the fetched inventory!"); return;}
+            if (inventory === undefined) { console.log("Error setting class inventory to the fetched inventory!"); return; }
             this.inventory = inventory;
         });
     }
 
     listen() {
-        setInterval(fetchInventory, this.refreshTime);
+        setInterval(() => {
+            fetchInventory().then((newInventory) => {
+                if (newInventory === undefined) { console.log("Error on fetching inventory!"); return; }
+                this.inventory = newInventory;
+                console.log("Updated Inventory")
+            })
+        }, this.refreshTime);
 
         //console.log(this.inventory.toys[1].sku);
     }
 
     getToys() { // index:number | undefined
         //if(index === undefined){
-            console.log(this.inventory);
-            return this.inventory.toys;
-            
+        console.log(this.inventory);
+        return this.inventory.toys;
+
         //} else{
         //     return this.inventory.toys[index];
         // }
     }
 
-    
+
 }
 
 async function fetchInventory() {
     return getTotalInventory().then((data) => {
         if (data?.total === undefined) { console.log("Total number of inventory items is NOT a number!"); return; }
 
-        return Math.floor(data?.total / 60); // should probably enforce number only return but this can only be a number so /shrug
+        console.log(data?.total)
+        return Math.ceil(data?.total / 60); // should probably enforce number only return but this can only be a number so /shrug
     }).then(async (pagesRequired) => {
         // We now have the amount of pages we need to fetch
         if (pagesRequired === undefined) { console.log("Error getting the pages required"); return; }
 
-        
         //let _temp_name = async () => {
         //  Make initial object
         let inventory: Inventory = {
@@ -59,7 +66,7 @@ async function fetchInventory() {
             toys: [],
         };
 
-        for (let i: number = 1; i < 1 + 1; i++) {
+        for (let i: number = 1; i < pagesRequired + 1; i++) {
             console.log(i);
 
             if (i === 1) { // If the first inventory search
@@ -82,16 +89,15 @@ async function fetchInventory() {
                         // I dont believe this is possible to overcome, so we must check if it exists before pushing.
                         // If a toy gets added/removed, its not too big of a deal, because we just check it again X number of seconds later
                         // defined in server.ts
-                        
 
                         inventory.toys.indexOf(toy) === -1 ? inventory.toys.push(toy) : console.log("This item already exists");
                     });
                 });
             }
-            
-            await delay(2500); // Wait 1500 miliseconds to prevent flooding the API
+
+            await delay(1000); // Wait 1000 miliseconds to prevent flooding the API
         }
-        
+
         console.log("Retrieved new inventory!")
         return inventory;
     }).then((inventory) => {
@@ -115,7 +121,8 @@ async function getTotalInventory() {
 
 async function getInventory(page: number) {
     // should probably figure out a better way of doing this :/
-    let inventoryUrl: string = `https://web.archive.org/web/20210312230702/https://bad-dragon.com/api/inventory-toys?price[min]=0&price[max]=300&sort[field]=price&&sort[direction]=asc&page=${page}&limit=60`
+    //let inventoryUrl: string = `https://web.archive.org/web/20210312230702/https://bad-dragon.com/api/inventory-toys?price[min]=0&price[max]=300&sort[field]=price&&sort[direction]=asc&page=${page}&limit=60`
+    let inventoryUrl: string = `https://bad-dragon.com/api/inventory-toys?price[min]=0&price[max]=300&sort[field]=price&&sort[direction]=asc&page=${page}&limit=60`
     console.log("Getting page ", page);
     try {
         const response = await axios.get(inventoryUrl);
