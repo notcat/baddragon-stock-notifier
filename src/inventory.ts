@@ -31,21 +31,17 @@ class startInventory {
                 console.log("Updated Inventory")
             })
         }, this.refreshTime);
-
-        //console.log(this.inventory.toys[1].sku);
     }
 
-    getToys() { // index:number | undefined
-        //if(index === undefined){
+    getToys() {
         console.log(this.inventory);
-        return this.inventory.toys;
+        let inventory: FetchedInventory = {
+            count: this.inventory.toys.length,
+            toys: this.inventory.toys,
+        };
 
-        //} else{
-        //     return this.inventory.toys[index];
-        // }
+        return inventory;
     }
-
-
 }
 
 async function fetchInventory() {
